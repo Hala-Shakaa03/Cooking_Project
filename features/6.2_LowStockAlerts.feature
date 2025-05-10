@@ -1,3 +1,4 @@
+@ignore
 Feature: Notify kitchen staff of low-stock ingredients
   As a kitchen manager
   I want to get alerts when stock is low

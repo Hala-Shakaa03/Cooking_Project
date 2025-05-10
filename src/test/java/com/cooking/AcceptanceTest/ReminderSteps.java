@@ -1,4 +1,4 @@
-package com.cooking.AcceptanceTest;
+/*package com.cooking.AcceptanceTest;
 
 import io.cucumber.java.en.*;
 
@@ -33,4 +33,4 @@ public class ReminderSteps {
     public void theSystemShouldSendACookingTaskReminder() {
         System.out.println("System sent cooking task reminder.");
     }
-}
+}*/

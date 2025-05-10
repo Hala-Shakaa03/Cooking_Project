@@ -1,50 +1,126 @@
 package com.cooking.AcceptanceTest;
 
-import io.cucumber.java.en.*;
+import com.cooking.core.OrderHistoryManager;
+import com.cooking.core.UserRole;
+import com.cooking.model.Order;
+import io.cucumber.java.Before;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.When;
+import io.cucumber.java.en.Then;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.logging.Logger;
+
+import static org.junit.Assert.*;
 
 public class OrderHistorySteps {
-	 @Given("I have placed previous orders")
-	    public void i_have_placed_previous_orders() {
-	        System.out.println("Customer has previous orders.");
-	    }
+    private static final Logger logger = Logger.getLogger(OrderHistorySteps.class.getName());
+    
+    private OrderHistoryManager orderManager;
+    private String currentCustomerId;
+    private String currentRequesterId;
+    private List<Order> retrievedOrders;
+    private Exception lastException;
 
-	    @When("I visit my order history")
-	    public void i_visit_my_order_history() {
-	        System.out.println("Customer opened order history.");
-	    }
+    @Before
+    public void setup() {
+        orderManager = new OrderHistoryManager();
+        lastException = null;
+        retrievedOrders = null;
+    }
 
-	    @Then("I should see a list of my past orders")
-	    public void i_should_see_a_list_of_my_past_orders() {
-	        System.out.println("Displayed list of past orders.");
-	    }
+    @Given("customer {string} has {int} past orders")
+    public void customerHasPastOrders(String customerId, Integer orderCount) {
+        currentCustomerId = customerId;
+        for (int i = 1; i <= orderCount; i++) {
+            Order order = new Order(
+                "ORD-" + UUID.randomUUID().toString().substring(0, 8),
+                LocalDate.now().minusDays(i),
+                "Meal-" + i,
+                15.99 + i
+            );
+            orderManager.addOrder(customerId, order);
+        }
+    }
 
-	    @Given("a customer has previous orders")
-	    public void a_customer_has_previous_orders() {
-	        System.out.println("Chef accessing customer's past orders.");
-	    }
+    private void viewOrderHistory(UserRole role, String requesterId) {
+        currentRequesterId = requesterId;
+        String roleName = role.name().toLowerCase();
+        
+        logger.info(String.format(
+            "%s %s viewing order history for customer %s",
+            roleName, currentRequesterId, currentCustomerId
+        ));
+        
+        try {
+            retrievedOrders = orderManager.getOrderHistory(
+                currentCustomerId, 
+                role,
+                currentRequesterId
+            );
+            
+            if (role == UserRole.UNAUTHORIZED) {
+                logger.warning("SECURITY: Unauthorized access was granted!");
+            } else {
+                logger.info(String.format(
+                    "%s access successful - found %d orders",
+                    roleName, retrievedOrders.size()
+                ));
+            }
+        } catch (SecurityException e) {
+            lastException = e;
+            logger.info(String.format(
+                "Expected %s access denied: %s",
+                roleName, e.getMessage()
+            ));
+        } catch (Exception e) {
+            lastException = e;
+            logger.severe(String.format(
+                "Unexpected error during %s access: %s",
+                roleName, e.getMessage()
+            ));
+        }
+    }
 
-	    @When("I view the customers profile")
-	    public void i_view_the_customers_profile() {
-	        System.out.println("Chef viewing customer profile.");
-	    }
+    @When("customer views the order history")
+    public void customerViewsTheOrderHistory() {
+        viewOrderHistory(UserRole.CUSTOMER, currentCustomerId);
+    }
 
-	    @Then("I should see their past orders to suggest meal plans")
-	    public void i_should_see_their_past_orders_to_suggest_meal_plans() {
-	        System.out.println("Chef sees past orders and can suggest meal plans.");
-	    }
+    @When("chef views the order history")
+    public void chefViewsTheOrderHistory() {
+        viewOrderHistory(UserRole.CHEF, "chef-1");
+    }
 
-	    @Given("the system has multiple customers with order history")
-	    public void the_system_has_multiple_customers_with_order_history() {
-	        System.out.println("System has multiple order histories.");
-	    }
+    @When("admin views the order history")
+    public void adminViewsTheOrderHistory() {
+        viewOrderHistory(UserRole.ADMIN, "admin-1");
+    }
 
-	    @When("I generate a trend report")
-	    public void i_generate_a_trend_report() {
-	        System.out.println("Admin generated trend report.");
-	    }
+    @When("unauthorized user views the order history")
+    public void unauthorizedUserViewsTheOrderHistory() {
+        viewOrderHistory(UserRole.UNAUTHORIZED, "unauth-1");
+    }
 
-	    @Then("I should see popular meals and customer preferences")
-	    public void i_should_see_popular_meals_and_customer_preferences() {
-	        System.out.println("Displayed popular meals and preferences.");
-	    }
+    @Then("they should see {int} orders")
+    public void theyShouldSeeOrders(Integer expectedCount) {
+        if (lastException != null) {
+            assertEquals(0, expectedCount.intValue());
+        } else {
+            assertEquals(expectedCount.intValue(), retrievedOrders.size());
+        }
+    }
+
+    @Then("the response status should be success")
+    public void theResponseStatusShouldBeSuccess() {
+        assertNull("Expected success but got exception: " + 
+                  (lastException != null ? lastException.getMessage() : ""), 
+                  lastException);
+    }
+
+    @Then("the response status should be denied")
+    public void theResponseStatusShouldBeDenied() {
+        assertNotNull("Expected access denied exception", lastException);
+        assertEquals("Access denied", lastException.getMessage());
+    }
 }

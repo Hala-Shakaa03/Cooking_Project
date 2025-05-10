@@ -1,3 +1,4 @@
+@ignore
 Feature: Send reminders for upcoming orders and deliveries
   As a customer
   I want to receive reminders before meal deliveries

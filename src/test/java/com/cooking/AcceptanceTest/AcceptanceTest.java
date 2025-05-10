@@ -5,7 +5,7 @@ import io.cucumber.junit.CucumberOptions.SnippetType;
 import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(features = "src/test/resources/cases",monochrome = true, snippets = SnippetType.CAMELCASE, 
+@CucumberOptions(features = "features",monochrome = true, snippets = SnippetType.CAMELCASE, 
         glue = {"com.cooking.AcceptanceTest"})
 
 public class AcceptanceTest {

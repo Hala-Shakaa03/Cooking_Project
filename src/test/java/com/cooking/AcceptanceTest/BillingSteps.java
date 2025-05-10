@@ -1,4 +1,4 @@
-package com.cooking.AcceptanceTest;
+/*package com.cooking.AcceptanceTest;
 
 import io.cucumber.java.en.*;
 
@@ -33,4 +33,4 @@ public class BillingSteps {
     public void the_system_should_generate_a_revenue_and_performance_report() {
         System.out.println("Financial report generated.");
     }
-}
+}*/

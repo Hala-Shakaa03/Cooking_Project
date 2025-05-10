@@ -1,4 +1,4 @@
-package com.cooking.AcceptanceTest;
+/*package com.cooking.AcceptanceTest;
 
 import io.cucumber.java.en.*;
 
@@ -32,4 +32,4 @@ public class InventorySteps {
     public void it_should_generate_a_restock_request() {
         System.out.println("Restock request generated.");
     }
-}
+}*/

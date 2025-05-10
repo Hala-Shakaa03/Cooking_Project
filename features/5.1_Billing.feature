@@ -1,4 +1,5 @@
-Feature: Generate invoices and track financial performance
+@ignore
+ Feature: Generate invoices and track financial performance
   As a customer
   I want to receive an invoice after my order
   So that I can have proof of payment
